@@ -24,6 +24,17 @@ function getDayKey() {
   const d = new Date(Date.now() - 2 * 60 * 60 * 1000);
   return `ct_log:${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
+
+function cleanOldLogs() {
+  const today = getDayKey();
+  Object.keys(localStorage).forEach((k) => {
+    if ((k.startsWith("ct_log:") || k.startsWith("ct_img:")) && k !== today) {
+      // ct_img ключи содержат id, не дату — удалять только ct_log
+      if (k.startsWith("ct_log:")) localStorage.removeItem(k);
+    }
+  });
+}
+
 function getMealIcon(t) {
   const h = parseInt((t || "12").split(":")[0]);
   if (h < 10) return "🌅";
@@ -61,6 +72,7 @@ function removeImage(id) {
   } catch (e) {}
 }
 function loadLog() {
+  cleanOldLogs();
   try {
     const raw = localStorage.getItem(getDayKey());
     if (!raw) return [];
@@ -469,7 +481,7 @@ export default function App() {
               onChange={(e) => setKeyInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && saveApiKey()}
               type="password"
-              placeholder="AIza..."
+              placeholder="API ключ..."
               style={{
                 width: "100%",
                 background: C.elev,
