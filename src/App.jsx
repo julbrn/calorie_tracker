@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
+import imageCompression from "browser-image-compression";
 
 const GEMINI_MODEL = "gemini-3-flash-preview";
 
@@ -52,51 +53,32 @@ function loadLog() {
   }
 }
 
-//review compression
-function compress(file) {
-  return new Promise((resolve) => {
+async function compress(file) {
+  const options = {
+    maxSizeMB: 0.3,
+    maxWidthOrHeight: 768,
+    useWebWorker: true,
+    fileType: "image/webp",
+    initialQuality: 0.75,
+  };
+
+  const compressed = await imageCompression(file, options);
+
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = () => resolve(null);
+    reader.onerror = () => reject(new Error("Не удалось прочитать файл"));
     reader.onload = (ev) => {
       const dataUrl = ev.target.result;
-      const img = new Image();
-      img.onerror = () =>
-        resolve({
-          dataUrl,
-          b64: dataUrl.split(",")[1],
-          mime: file.type || "image/jpeg",
-        });
-      img.onload = () => {
-        try {
-          const max = 1024;
-          let w = img.width,
-            h = img.height;
-          if (w > h) {
-            if (w > max) {
-              h = Math.round((h * max) / w);
-              w = max;
-            }
-          } else {
-            if (h > max) {
-              w = Math.round((w * max) / h);
-              h = max;
-            }
-          }
-          const canvas = document.createElement("canvas");
-          canvas.width = w;
-          canvas.height = h;
-          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-          const out = canvas.toDataURL("image/jpeg", 0.82);
-          resolve({ dataUrl: out, b64: out.split(",")[1], mime: "image/jpeg" });
-        } catch (err) {
-          resolve({ dataUrl, b64: dataUrl.split(",")[1], mime: "image/jpeg" });
-        }
-      };
-      img.src = dataUrl;
+      resolve({
+        dataUrl,
+        b64: dataUrl.split(",")[1],
+        mime: compressed.type,
+      });
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(compressed);
   });
 }
+
 async function callGemini(apiKey, b64, mime, text) {
   const parts = [];
   if (b64) parts.push({ inline_data: { mime_type: mime, data: b64 } });
@@ -129,7 +111,6 @@ async function callGemini(apiKey, b64, mime, text) {
   return parsed;
 }
 
-// ── Styles ──────────────────────────────────────────
 const css = `
   *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
   body { background: ${C.bg}; color: ${C.t1}; font-family: -apple-system, 'Inter', system-ui, sans-serif; min-height: 100vh; }
@@ -140,7 +121,6 @@ const css = `
   .spinner { display: inline-block; width: 16px; height: 16px; border: 2.5px solid ${C.t3}; border-top-color: ${C.acc}; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 8px; }
 `;
 
-// ── Components ───────────────────────────────────────
 function Card({ children, style }) {
   return (
     <div
@@ -173,7 +153,6 @@ function Label({ children }) {
   );
 }
 
-// ── App ──────────────────────────────────────────────
 export default function App() {
   const [apiKey, setApiKey] = useState(
     () => localStorage.getItem("ct_apikey") || "",
@@ -188,7 +167,7 @@ export default function App() {
   const [text, setText] = useState("");
   const [preview, setPreview] = useState(null);
   const [b64, setB64] = useState(null);
-  const [mime, setMime] = useState("image/jpeg");
+  const [mime, setMime] = useState("image/webp");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef();
@@ -204,26 +183,29 @@ export default function App() {
     if (fileRef.current) fileRef.current.value = "";
     fileRef.current.click();
   }
+
   async function onFileChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     setPreview(null);
     setB64(null);
     setError("");
-    const res = await compress(file);
-    if (!res) {
+    try {
+      const res = await compress(file);
+      setPreview(res.dataUrl);
+      setB64(res.b64);
+      setMime(res.mime);
+    } catch (err) {
       setError("Не удалось загрузить фото");
-      return;
     }
-    setPreview(res.dataUrl);
-    setB64(res.b64);
-    setMime(res.mime);
   }
+
   function clearImage() {
     setPreview(null);
     setB64(null);
     if (fileRef.current) fileRef.current.value = "";
   }
+
   function saveGoalFn() {
     const v = parseInt(tempGoal);
     if (v > 0) {
@@ -232,12 +214,14 @@ export default function App() {
     }
     setEditGoal(false);
   }
+
   function saveApiKey() {
     const v = keyInput.trim();
     if (!v) return;
     localStorage.setItem("ct_apikey", v);
     setApiKey(v);
   }
+
   async function handleAnalyze() {
     if (!canSubmit) return;
     if (!apiKey) {
@@ -269,6 +253,7 @@ export default function App() {
     }
     setLoading(false);
   }
+
   function removeEntry(id) {
     const updated = log.filter((e) => e.id !== id);
     setLog(updated);
