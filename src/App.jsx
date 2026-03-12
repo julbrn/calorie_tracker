@@ -43,11 +43,28 @@ function saveLog(log) {
     localStorage.setItem(getDayKey(), JSON.stringify(slim));
   } catch (e) {}
 }
+function saveImage(id, dataUrl) {
+  try {
+    if (dataUrl) localStorage.setItem(`ct_img:${id}`, dataUrl);
+  } catch (e) {}
+}
+function loadImage(id) {
+  try {
+    return localStorage.getItem(`ct_img:${id}`) || null;
+  } catch (e) {
+    return null;
+  }
+}
+function removeImage(id) {
+  try {
+    localStorage.removeItem(`ct_img:${id}`);
+  } catch (e) {}
+}
 function loadLog() {
   try {
     const raw = localStorage.getItem(getDayKey());
     if (!raw) return [];
-    return JSON.parse(raw).map((e) => ({ ...e, image: null }));
+    return JSON.parse(raw).map((e) => ({ ...e, image: loadImage(e.id) }));
   } catch (e) {
     return [];
   }
@@ -243,6 +260,7 @@ export default function App() {
         total: result.total || 0,
         image: preview,
       };
+      saveImage(entry.id, preview);
       const updated = [entry, ...log];
       setLog(updated);
       saveLog(updated);
@@ -255,6 +273,7 @@ export default function App() {
   }
 
   function removeEntry(id) {
+    removeImage(id);
     const updated = log.filter((e) => e.id !== id);
     setLog(updated);
     saveLog(updated);
