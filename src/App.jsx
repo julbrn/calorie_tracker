@@ -16,14 +16,35 @@ function Label({ children, className }) {
 
 export default function App() {
   const {
-    apiKey, keyInput, setKeyInput,
-    goal, editGoal, setEditGoal, tempGoal, setTempGoal,
-    log, text, setText, preview, loading, error,
-    fileRef, isAndroid,
-    total, pct, remaining, pColorClass, canSubmit,
-    openPicker, onFileChange, clearImage,
-    saveGoal, saveApiKey, resetApiKey,
-    handleAnalyze, removeEntry,
+    apiKey,
+    keyInput,
+    setKeyInput,
+    goal,
+    editGoal,
+    setEditGoal,
+    tempGoal,
+    setTempGoal,
+    log,
+    text,
+    setText,
+    preview,
+    loading,
+    error,
+    fileRef,
+    // isAndroid,
+    total,
+    pct,
+    remaining,
+    pColorClass,
+    canSubmit,
+    openPicker,
+    onFileChange,
+    clearImage,
+    saveGoal,
+    saveApiKey,
+    resetApiKey,
+    handleAnalyze,
+    removeEntry,
   } = useCalorieTracker();
 
   return (
@@ -44,12 +65,22 @@ export default function App() {
                 onKeyDown={(e) => e.key === "Enter" && saveGoal()}
                 className="header__goal-input"
               />
-              <button onClick={saveGoal} className="header__goal-save tap">ОК</button>
-              <button onClick={() => setEditGoal(false)} className="header__goal-cancel tap">✕</button>
+              <button onClick={saveGoal} className="header__goal-save tap">
+                ОК
+              </button>
+              <button
+                onClick={() => setEditGoal(false)}
+                className="header__goal-cancel tap"
+              >
+                ✕
+              </button>
             </div>
           ) : (
             <button
-              onClick={() => { setEditGoal(true); setTempGoal(String(goal)); }}
+              onClick={() => {
+                setEditGoal(true);
+                setTempGoal(String(goal));
+              }}
               className="header__goal-btn tap"
             >
               <div className="header__goal-text">
@@ -68,7 +99,11 @@ export default function App() {
             <p className="api-key-banner__text">
               <strong>Введи Gemini API ключ</strong> — сохранится на устройстве.
               <br />
-              Бесплатно: <strong className="api-key-banner__link">aistudio.google.com</strong> → Get API key
+              Бесплатно:{" "}
+              <strong className="api-key-banner__link">
+                aistudio.google.com
+              </strong>{" "}
+              → Get API key
             </p>
             <input
               value={keyInput}
@@ -89,7 +124,9 @@ export default function App() {
             <div>
               <div className="progress__stat-label">Съедено сегодня</div>
               <div className="progress__total">
-                <span className={`progress__total-value progress__total-value--${pColorClass}`}>
+                <span
+                  className={`progress__total-value progress__total-value--${pColorClass}`}
+                >
                   {total}
                 </span>
                 <span className="progress__total-unit">ккал</span>
@@ -99,7 +136,9 @@ export default function App() {
               <div className="progress__stat-label">
                 {remaining >= 0 ? "Осталось" : "Перебор"}
               </div>
-              <div className={`progress__remaining-value progress__remaining-value--${remaining >= 0 ? "positive" : "negative"}`}>
+              <div
+                className={`progress__remaining-value progress__remaining-value--${remaining >= 0 ? "positive" : "negative"}`}
+              >
                 {remaining >= 0 ? remaining : `+${Math.abs(remaining)}`}
               </div>
             </div>
@@ -112,7 +151,9 @@ export default function App() {
           </div>
           <div className="progress__labels">
             <span className="progress__label-text">0</span>
-            <span className={`progress__label-text progress__label-text--pct progress__label-text--${pColorClass}`}>
+            <span
+              className={`progress__label-text progress__label-text--pct progress__label-text--${pColorClass}`}
+            >
               {Math.round(pct)}%
             </span>
             <span className="progress__label-text">{goal}</span>
@@ -125,7 +166,7 @@ export default function App() {
             ref={fileRef}
             type="file"
             accept="image/*"
-            {...(isAndroid ? { capture: "environment" } : {})}
+            // {...(isAndroid ? { capture: "environment" } : {})}
             style={{ display: "none" }}
             onChange={onFileChange}
           />
@@ -135,9 +176,19 @@ export default function App() {
               <div className="meal-form__photo-info">
                 <div className="meal-form__photo-title">📷 Фото загружено</div>
                 <div className="meal-form__photo-actions">
-                  <button onClick={openPicker} className="meal-form__photo-replace tap">Заменить</button>
+                  <button
+                    onClick={openPicker}
+                    className="meal-form__photo-replace tap"
+                  >
+                    Заменить
+                  </button>
                   <span className="meal-form__photo-sep">·</span>
-                  <button onClick={clearImage} className="meal-form__photo-remove tap">Удалить</button>
+                  <button
+                    onClick={clearImage}
+                    className="meal-form__photo-remove tap"
+                  >
+                    Удалить
+                  </button>
                 </div>
               </div>
             </div>
@@ -165,7 +216,14 @@ export default function App() {
             disabled={!canSubmit}
             className={`meal-form__submit meal-form__submit--${canSubmit ? "active tap" : "disabled"}`}
           >
-            {loading ? <><span className="spinner" />Анализирую...</> : "Посчитать калории →"}
+            {loading ? (
+              <>
+                <span className="spinner" />
+                Анализирую...
+              </>
+            ) : (
+              "Посчитать калории →"
+            )}
           </button>
         </Card>
 
@@ -178,10 +236,17 @@ export default function App() {
             <div className="log__list">
               {log.map((entry) => (
                 <div key={entry.id} className="log-entry">
-                  {entry.image
-                    ? <img src={entry.image} alt="" className="log-entry__image" />
-                    : <div className="log-entry__icon">{getMealIcon(entry.time)}</div>
-                  }
+                  {entry.image ? (
+                    <img
+                      src={entry.image}
+                      alt=""
+                      className="log-entry__image"
+                    />
+                  ) : (
+                    <div className="log-entry__icon">
+                      {getMealIcon(entry.time)}
+                    </div>
+                  )}
                   <div className="log-entry__info">
                     <div className="log-entry__title">{entry.description}</div>
                     <div className="log-entry__time">{entry.time}</div>
@@ -200,10 +265,17 @@ export default function App() {
                   </div>
                   <div className="log-entry__actions">
                     <div className="log-entry__calories">
-                      <div className="log-entry__calories-value">{entry.total}</div>
+                      <div className="log-entry__calories-value">
+                        {entry.total}
+                      </div>
                       <div className="log-entry__calories-unit">ккал</div>
                     </div>
-                    <button onClick={() => removeEntry(entry.id)} className="log-entry__delete">✕</button>
+                    <button
+                      onClick={() => removeEntry(entry.id)}
+                      className="log-entry__delete"
+                    >
+                      ✕
+                    </button>
                   </div>
                 </div>
               ))}
