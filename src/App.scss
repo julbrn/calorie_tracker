@@ -35,6 +35,12 @@ body {
   min-height: 100vh;
 }
 
+input,
+textarea,
+select {
+  font-size: max(16px, 1em);
+}
+
 input:focus,
 textarea:focus {
   outline: none;
