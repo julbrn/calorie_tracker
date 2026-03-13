@@ -1,24 +1,8 @@
 import { useState, useRef } from "react";
 import imageCompression from "browser-image-compression";
+import "./App.scss";
 
 const GEMINI_MODEL = "gemini-3-flash-preview";
-
-const C = {
-  bg: "#07070f",
-  surf: "#111120",
-  elev: "#181828",
-  border: "rgba(255,255,255,0.07)",
-  t1: "#f0f2ff",
-  t2: "#b0b8d8",
-  t3: "#6b7280",
-  acc: "#7c7ff7",
-  accl: "#a5a8fb",
-  pur: "#a855f7",
-  grn: "#4ade80",
-  yel: "#fbbf24",
-  red: "#f87171",
-};
-const R = { sm: 10, md: 14, lg: 18, xl: 22 };
 
 function getDayKey() {
   const d = new Date(Date.now() - 2 * 60 * 60 * 1000);
@@ -140,43 +124,17 @@ async function callGemini(apiKey, b64, mime, text) {
   return parsed;
 }
 
-const css = `
-  *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-  body { background: ${C.bg}; color: ${C.t1}; font-family: -apple-system, 'Inter', system-ui, sans-serif; min-height: 100vh; }
-  .tap:active { opacity: .75; transform: scale(.97); }
-  input:focus, textarea:focus { outline: none; }
-  textarea::placeholder { color: ${C.t3}; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner { display: inline-block; width: 16px; height: 16px; border: 2.5px solid ${C.t3}; border-top-color: ${C.acc}; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 8px; }
-`;
-
-function Card({ children, style }) {
+function Card({ children, className }) {
   return (
-    <div
-      style={{
-        background: C.surf,
-        borderRadius: R.xl,
-        border: `1px solid ${C.border}`,
-        padding: "20px 18px",
-        ...style,
-      }}
-    >
+    <div className={`card${className ? ` ${className}` : ""}`}>
       {children}
     </div>
   );
 }
-function Label({ children }) {
+
+function Label({ children, className }) {
   return (
-    <div
-      style={{
-        fontSize: 11,
-        fontWeight: 700,
-        color: C.t3,
-        textTransform: "uppercase",
-        letterSpacing: ".08em",
-        marginBottom: 14,
-      }}
-    >
+    <div className={`label${className ? ` ${className}` : ""}`}>
       {children}
     </div>
   );
@@ -205,7 +163,7 @@ export default function App() {
   const total = log.reduce((s, e) => s + e.total, 0);
   const pct = Math.min((total / goal) * 100, 100);
   const remaining = goal - total;
-  const pColor = pct < 60 ? C.grn : pct < 85 ? C.yel : C.red;
+  const pColorClass = pct < 60 ? "green" : pct < 85 ? "yellow" : "red";
   const canSubmit = !loading && (!!b64 || text.trim().length > 0);
 
   function openPicker() {
@@ -293,103 +251,29 @@ export default function App() {
 
   return (
     <>
-      <style>{css}</style>
-
       {/* Header */}
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 20,
-          background: "rgba(7,7,15,.92)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          borderBottom: `1px solid ${C.border}`,
-          padding: "12px 18px",
-          paddingTop: "max(12px, env(safe-area-inset-top))",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 560,
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 11,
-                background: `linear-gradient(135deg,${C.acc},${C.pur})`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 20,
-                boxShadow: "0 4px 14px rgba(124,127,247,.4)",
-                flexShrink: 0,
-              }}
-            >
-              🥗
-            </div>
-            <span
-              style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-.4px" }}
-            >
-              Calorie Tracker
-            </span>
+      <header className="header">
+        <div className="header__inner">
+          <div className="header__brand">
+            <div className="header__logo">🥗</div>
+            <span className="header__title">Calorie Tracker</span>
           </div>
           {editGoal ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div className="header__goal-edit">
               <input
                 value={tempGoal}
                 type="number"
                 autoFocus
                 onChange={(e) => setTempGoal(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && saveGoalFn()}
-                style={{
-                  width: 80,
-                  background: C.elev,
-                  border: `1.5px solid ${C.acc}`,
-                  borderRadius: R.sm,
-                  color: C.t1,
-                  padding: "6px 10px",
-                  fontSize: 15,
-                  fontWeight: 700,
-                  textAlign: "center",
-                }}
+                className="header__goal-input"
               />
-              <button
-                onClick={saveGoalFn}
-                className="tap"
-                style={{
-                  background: C.acc,
-                  border: "none",
-                  borderRadius: R.sm,
-                  color: "#fff",
-                  padding: "6px 12px",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={saveGoalFn} className="header__goal-save tap">
                 ОК
               </button>
               <button
                 onClick={() => setEditGoal(false)}
-                className="tap"
-                style={{
-                  background: C.elev,
-                  border: "none",
-                  borderRadius: R.sm,
-                  color: C.t2,
-                  padding: "6px 10px",
-                  fontSize: 14,
-                  cursor: "pointer",
-                }}
+                className="header__goal-cancel tap"
               >
                 ✕
               </button>
@@ -400,81 +284,30 @@ export default function App() {
                 setEditGoal(true);
                 setTempGoal(String(goal));
               }}
-              className="tap"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                background: "rgba(124,127,247,.1)",
-                border: "1px solid rgba(124,127,247,.2)",
-                borderRadius: R.md,
-                padding: "7px 12px",
-                cursor: "pointer",
-              }}
+              className="header__goal-btn tap"
             >
-              <div style={{ textAlign: "right" }}>
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: C.acc,
-                    textTransform: "uppercase",
-                    letterSpacing: ".08em",
-                    fontWeight: 700,
-                  }}
-                >
-                  Лимит
-                </div>
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: C.accl,
-                    letterSpacing: "-.3px",
-                  }}
-                >
-                  {goal} ккал
-                </div>
+              <div className="header__goal-text">
+                <div className="header__goal-label">Лимит</div>
+                <div className="header__goal-value">{goal} ккал</div>
               </div>
-              <span style={{ fontSize: 15, opacity: 0.7 }}>⚙️</span>
+              <span className="header__goal-icon">⚙️</span>
             </button>
           )}
         </div>
       </header>
 
-      <main
-        style={{
-          maxWidth: 560,
-          margin: "0 auto",
-          padding: "18px 14px 60px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-        }}
-      >
+      <main className="main">
         {/* API Key */}
         {!apiKey && (
-          <div
-            style={{
-              background: "rgba(124,127,247,.1)",
-              border: "1px solid rgba(124,127,247,.25)",
-              borderRadius: R.xl,
-              padding: "18px",
-            }}
-          >
-            <p
-              style={{
-                fontSize: 14,
-                color: C.t2,
-                lineHeight: 1.6,
-                marginBottom: 12,
-              }}
-            >
-              <strong style={{ color: C.t1 }}>Введи Gemini API ключ</strong> —
-              сохранится на устройстве.
+          <div className="api-key-banner">
+            <p className="api-key-banner__text">
+              <strong>Введи Gemini API ключ</strong> — сохранится на устройстве.
               <br />
               Бесплатно:{" "}
-              <strong style={{ color: C.accl }}>aistudio.google.com</strong> →
-              Get API key
+              <strong className="api-key-banner__link">
+                aistudio.google.com
+              </strong>{" "}
+              → Get API key
             </p>
             <input
               value={keyInput}
@@ -482,32 +315,9 @@ export default function App() {
               onKeyDown={(e) => e.key === "Enter" && saveApiKey()}
               type="password"
               placeholder="API ключ..."
-              style={{
-                width: "100%",
-                background: C.elev,
-                border: `1.5px solid ${C.acc}`,
-                borderRadius: R.md,
-                color: C.t1,
-                padding: "11px 14px",
-                fontSize: 14,
-                marginBottom: 10,
-              }}
+              className="api-key-banner__input"
             />
-            <button
-              onClick={saveApiKey}
-              className="tap"
-              style={{
-                width: "100%",
-                padding: 13,
-                borderRadius: R.md,
-                border: "none",
-                background: `linear-gradient(135deg,${C.acc},${C.pur})`,
-                color: "#fff",
-                fontSize: 15,
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
+            <button onClick={saveApiKey} className="api-key-banner__submit tap">
               Сохранить ключ
             </button>
           </div>
@@ -515,100 +325,48 @@ export default function App() {
 
         {/* Progress */}
         <Card>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: 16,
-            }}
-          >
+          <div className="progress__header">
             <div>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: C.t3,
-                  textTransform: "uppercase",
-                  letterSpacing: ".08em",
-                  marginBottom: 4,
-                }}
-              >
-                Съедено сегодня
-              </div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+              <div className="progress__stat-label">Съедено сегодня</div>
+              <div className="progress__total">
                 <span
-                  style={{
-                    fontSize: 48,
-                    fontWeight: 900,
-                    lineHeight: 1,
-                    color: pColor,
-                    transition: "color .4s",
-                    letterSpacing: "-2px",
-                  }}
+                  className={`progress__total-value progress__total-value--${pColorClass}`}
                 >
                   {total}
                 </span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: C.t3 }}>
-                  ккал
-                </span>
+                <span className="progress__total-unit">ккал</span>
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: C.t3,
-                  textTransform: "uppercase",
-                  letterSpacing: ".08em",
-                  marginBottom: 4,
-                }}
-              >
+            <div className="progress__remaining">
+              <div className="progress__stat-label">
                 {remaining >= 0 ? "Осталось" : "Перебор"}
               </div>
               <div
-                style={{
-                  fontSize: 26,
-                  fontWeight: 800,
-                  letterSpacing: "-1px",
-                  color: remaining >= 0 ? C.grn : C.red,
-                }}
+                className={`progress__remaining-value progress__remaining-value--${remaining >= 0 ? "positive" : "negative"}`}
               >
                 {remaining >= 0 ? remaining : `+${Math.abs(remaining)}`}
               </div>
             </div>
           </div>
-          <div
-            style={{
-              height: 10,
-              background: C.elev,
-              borderRadius: 99,
-              overflow: "hidden",
-              marginBottom: 6,
-            }}
-          >
+          <div className="progress__bar">
             <div
-              style={{
-                height: "100%",
-                width: `${pct}%`,
-                background: `linear-gradient(90deg,${pColor}60,${pColor})`,
-                borderRadius: 99,
-                transition: "width .7s cubic-bezier(.4,0,.2,1)",
-              }}
+              className={`progress__bar-fill progress__bar-fill--${pColorClass}`}
+              style={{ width: `${pct}%` }}
             />
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 11, color: C.t3 }}>0</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: pColor }}>
+          <div className="progress__labels">
+            <span className="progress__label-text">0</span>
+            <span
+              className={`progress__label-text progress__label-text--pct progress__label-text--${pColorClass}`}
+            >
               {Math.round(pct)}%
             </span>
-            <span style={{ fontSize: 11, color: C.t3 }}>{goal}</span>
+            <span className="progress__label-text">{goal}</span>
           </div>
         </Card>
 
         {/* Add meal */}
-        <Card style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <Card className="card--flex">
           <Label>Добавить приём пищи</Label>
 
           <input
@@ -621,68 +379,25 @@ export default function App() {
           />
 
           {preview ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                background: C.elev,
-                borderRadius: R.md,
-                padding: "10px 12px",
-              }}
-            >
+            <div className="meal-form__photo-preview">
               <img
                 src={preview}
                 alt=""
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: R.sm,
-                  objectFit: "cover",
-                  flexShrink: 0,
-                  border: `2px solid ${C.acc}`,
-                }}
+                className="meal-form__photo-thumb"
               />
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.t1,
-                    marginBottom: 4,
-                  }}
-                >
-                  📷 Фото загружено
-                </div>
-                <div style={{ display: "flex", gap: 10 }}>
+              <div className="meal-form__photo-info">
+                <div className="meal-form__photo-title">📷 Фото загружено</div>
+                <div className="meal-form__photo-actions">
                   <button
                     onClick={openPicker}
-                    className="tap"
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: C.accl,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
+                    className="meal-form__photo-replace tap"
                   >
                     Заменить
                   </button>
-                  <span style={{ color: C.t3, fontSize: 12 }}>·</span>
+                  <span className="meal-form__photo-sep">·</span>
                   <button
                     onClick={clearImage}
-                    className="tap"
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: C.red,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
+                    className="meal-form__photo-remove tap"
                   >
                     Удалить
                   </button>
@@ -690,43 +405,16 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <button
-              onClick={openPicker}
-              className="tap"
-              style={{
-                width: "100%",
-                padding: 16,
-                borderRadius: R.md,
-                border: `2px dashed ${C.elev}`,
-                background: C.elev,
-                color: C.t2,
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-              }}
-            >
-              <span style={{ fontSize: 22 }}>📷</span>
+            <button onClick={openPicker} className="meal-form__upload-btn tap">
+              <span className="meal-form__upload-icon">📷</span>
               <span>Добавить фото еды</span>
             </button>
           )}
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ flex: 1, height: 1, background: C.elev }} />
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: C.t3,
-                letterSpacing: ".06em",
-              }}
-            >
-              ИЛИ ОПИШИТЕ
-            </span>
-            <div style={{ flex: 1, height: 1, background: C.elev }} />
+          <div className="divider">
+            <div className="divider__line" />
+            <span className="divider__text">ИЛИ ОПИШИТЕ</span>
+            <div className="divider__line" />
           </div>
 
           <textarea
@@ -734,49 +422,17 @@ export default function App() {
             onChange={(e) => setText(e.target.value)}
             rows={3}
             placeholder="«гречка с курицей, кефир, яблоко»"
-            style={{
-              width: "100%",
-              background: C.elev,
-              border: `1.5px solid transparent`,
-              borderRadius: R.md,
-              color: C.t1,
-              padding: "12px 14px",
-              fontSize: 15,
-              fontWeight: 500,
-              resize: "none",
-              fontFamily: "inherit",
-              lineHeight: 1.5,
-              transition: "border-color .2s",
-            }}
-            onFocus={(e) => (e.target.style.borderColor = C.acc)}
-            onBlur={(e) => (e.target.style.borderColor = "transparent")}
+            className="meal-form__textarea"
           />
 
           {error && (
-            <div style={{ color: C.red, fontSize: 13, fontWeight: 600 }}>
-              ⚠️ {error}
-            </div>
+            <div className="meal-form__error">⚠️ {error}</div>
           )}
 
           <button
             onClick={handleAnalyze}
             disabled={!canSubmit}
-            className={canSubmit ? "tap" : ""}
-            style={{
-              width: "100%",
-              padding: 15,
-              borderRadius: R.lg,
-              border: "none",
-              background: canSubmit
-                ? `linear-gradient(135deg,${C.acc},${C.pur})`
-                : C.elev,
-              color: canSubmit ? "#fff" : C.t3,
-              fontSize: 16,
-              fontWeight: 700,
-              cursor: canSubmit ? "pointer" : "not-allowed",
-              transition: "all .2s",
-              boxShadow: canSubmit ? "0 8px 24px rgba(124,127,247,.3)" : "none",
-            }}
+            className={`meal-form__submit meal-form__submit--${canSubmit ? "active tap" : "disabled"}`}
           >
             {loading ? (
               <>
@@ -792,162 +448,50 @@ export default function App() {
         {/* Log */}
         {log.length > 0 && (
           <Card>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 14,
-              }}
-            >
-              <Label style={{ marginBottom: 0 }}>Журнал дня</Label>
-              <span style={{ fontSize: 13, fontWeight: 700, color: C.t2 }}>
-                {total} ккал
-              </span>
+            <div className="log__header">
+              <Label className="label--no-margin">Журнал дня</Label>
+              <span className="log__total">{total} ккал</span>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="log__list">
               {log.map((entry) => (
-                <div
-                  key={entry.id}
-                  style={{
-                    display: "flex",
-                    gap: 12,
-                    background: C.elev,
-                    borderRadius: R.lg,
-                    padding: 12,
-                    border: `1px solid ${C.border}`,
-                  }}
-                >
+                <div key={entry.id} className="log-entry">
                   {entry.image ? (
                     <img
                       src={entry.image}
                       alt=""
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: R.md,
-                        objectFit: "cover",
-                        flexShrink: 0,
-                      }}
+                      className="log-entry__image"
                     />
                   ) : (
-                    <div
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: R.md,
-                        background: C.surf,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 20,
-                        flexShrink: 0,
-                      }}
-                    >
+                    <div className="log-entry__icon">
                       {getMealIcon(entry.time)}
                     </div>
                   )}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: C.t1,
-                        marginBottom: 2,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {entry.description}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: C.t3,
-                        marginBottom: 6,
-                      }}
-                    >
-                      {entry.time}
-                    </div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  <div className="log-entry__info">
+                    <div className="log-entry__title">{entry.description}</div>
+                    <div className="log-entry__time">{entry.time}</div>
+                    <div className="log-entry__badges">
                       {entry.items.slice(0, 3).map((it, i) => (
-                        <span
-                          key={i}
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 600,
-                            background: "rgba(124,127,247,.12)",
-                            color: C.accl,
-                            padding: "2px 7px",
-                            borderRadius: 99,
-                          }}
-                        >
+                        <span key={i} className="log-entry__badge">
                           {it.name} · {it.calories}
                         </span>
                       ))}
                       {entry.items.length > 3 && (
-                        <span
-                          style={{
-                            fontSize: 11,
-                            background: C.surf,
-                            color: C.t3,
-                            padding: "2px 7px",
-                            borderRadius: 99,
-                          }}
-                        >
+                        <span className="log-entry__badge log-entry__badge--more">
                           +{entry.items.length - 3}
                         </span>
                       )}
                     </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
-                      justifyContent: "space-between",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <div style={{ textAlign: "right" }}>
-                      <div
-                        style={{
-                          fontSize: 17,
-                          fontWeight: 900,
-                          color: C.accl,
-                          letterSpacing: "-.5px",
-                        }}
-                      >
+                  <div className="log-entry__actions">
+                    <div className="log-entry__calories">
+                      <div className="log-entry__calories-value">
                         {entry.total}
                       </div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          color: C.t3,
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        ккал
-                      </div>
+                      <div className="log-entry__calories-unit">ккал</div>
                     </div>
                     <button
                       onClick={() => removeEntry(entry.id)}
-                      onTouchStart={(e) =>
-                        (e.currentTarget.style.color = C.red)
-                      }
-                      onTouchEnd={(e) => (e.currentTarget.style.color = C.t3)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: C.t3,
-                        cursor: "pointer",
-                        fontSize: 18,
-                        padding: 4,
-                        lineHeight: 1,
-                      }}
+                      className="log-entry__delete"
                     >
                       ✕
                     </button>
@@ -960,20 +504,14 @@ export default function App() {
 
         {/* Change API key */}
         {apiKey && (
-          <div style={{ textAlign: "center" }}>
+          <div className="change-key">
             <button
               onClick={() => {
                 localStorage.removeItem("ct_apikey");
                 setApiKey("");
                 setKeyInput("");
               }}
-              style={{
-                background: "none",
-                border: "none",
-                color: C.t3,
-                fontSize: 12,
-                cursor: "pointer",
-              }}
+              className="change-key__btn"
             >
               Сменить API ключ
             </button>
