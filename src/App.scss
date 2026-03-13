@@ -435,9 +435,9 @@ textarea::placeholder {
     width: 100%;
     padding: 16px;
     border-radius: $r-md;
-    border: 2px dashed $elev;
-    background: $elev;
-    color: $t2;
+    border: 2px dashed rgba($acc, 0.4);
+    background: rgba($acc, 0.06);
+    color: $t1;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
@@ -445,6 +445,12 @@ textarea::placeholder {
     align-items: center;
     justify-content: center;
     gap: 10px;
+    transition: border-color 0.2s, background 0.2s;
+
+    &:hover {
+      border-color: rgba($acc, 0.7);
+      background: rgba($acc, 0.1);
+    }
   }
 
   &__upload-icon {
@@ -454,7 +460,7 @@ textarea::placeholder {
   &__textarea {
     width: 100%;
     background: $elev;
-    border: 1.5px solid transparent;
+    border: 1.5px solid rgba($acc, 0.3);
     border-radius: $r-md;
     color: $t1;
     padding: 12px 14px;
@@ -465,8 +471,13 @@ textarea::placeholder {
     line-height: 1.5;
     transition: border-color 0.2s;
 
+    &::placeholder {
+      color: $t3;
+    }
+
     &:focus {
       border-color: $acc;
+      outline: none;
     }
   }
 
