@@ -5,8 +5,8 @@ export async function callGemini(apiKey, b64, mime, text) {
   if (b64) parts.push({ inline_data: { mime_type: mime, data: b64 } });
 
   const prompt = b64
-    ? `Food image${text ? `, also: "${text}"` : ""}. Identify items, estimate calories. Respond ONLY with raw JSON (no markdown): {"items":[{"name":"...","calories":N}],"total":N,"description":"summary in Russian"}`
-    : `Estimate calories for: "${text}". Respond ONLY with raw JSON (no markdown): {"items":[{"name":"...","calories":N}],"total":N,"description":"summary in Russian"}`;
+    ? `Food image${text ? `, also: "${text}"` : ""}. Identify items, estimate calories. All text in Russian. Respond ONLY with raw JSON (no markdown): {"items":[{"name":"название на русском","calories":N}],"total":N,"description":"краткое описание на русском"}`
+    : `Estimate calories for: "${text}". All text in Russian. Respond ONLY with raw JSON (no markdown): {"items":[{"name":"название на русском","calories":N}],"total":N,"description":"краткое описание на русском"}`;
   parts.push({ text: prompt });
 
   const res = await fetch(

@@ -20,6 +20,8 @@ export function useCalorieTracker() {
   const [mime, setMime] = useState("image/webp");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [pendingEntry, setPendingEntry] = useState(null);
+  const [confirmItems, setConfirmItems] = useState([]);
   const fileRef = useRef();
 
   const total = log.reduce((s, e) => s + e.total, 0);
@@ -99,16 +101,50 @@ export function useCalorieTracker() {
         total: result.total || 0,
         image: preview,
       };
-      persistImage(entry.id, preview);
-      const updated = [entry, ...log];
-      setLog(updated);
-      saveLog(updated);
-      setText("");
-      clearImage();
+      setPendingEntry(entry);
+      setConfirmItems(entry.items.map((it) => ({ ...it })));
     } catch (e) {
       setError(e.message);
     }
     setLoading(false);
+  }
+
+  async function handleRecalculate() {
+    const names = confirmItems.map((it) => it.name).filter(Boolean);
+    if (!names.length || !apiKey) return;
+    setError("");
+    setLoading(true);
+    try {
+      const result = await callGemini(apiKey, null, null, names.join(", "));
+      setConfirmItems(result.items || []);
+      setPendingEntry((prev) => ({
+        ...prev,
+        description: result.description || prev.description,
+      }));
+    } catch (e) {
+      setError(e.message);
+    }
+    setLoading(false);
+  }
+
+  function handleConfirm() {
+    if (!pendingEntry) return;
+    const items = confirmItems.filter((it) => it.name.trim());
+    const total = items.reduce((s, it) => s + (Number(it.calories) || 0), 0);
+    const entry = { ...pendingEntry, items, total };
+    persistImage(entry.id, entry.image);
+    const updated = [entry, ...log];
+    setLog(updated);
+    saveLog(updated);
+    setPendingEntry(null);
+    setConfirmItems([]);
+    setText("");
+    clearImage();
+  }
+
+  function cancelPending() {
+    setPendingEntry(null);
+    setConfirmItems([]);
   }
 
   function removeEntry(id) {
@@ -150,6 +186,12 @@ export function useCalorieTracker() {
     saveApiKey,
     resetApiKey,
     handleAnalyze,
+    pendingEntry,
+    confirmItems,
+    setConfirmItems,
+    handleRecalculate,
+    handleConfirm,
+    cancelPending,
     removeEntry,
   };
 }

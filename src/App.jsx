@@ -44,6 +44,12 @@ export default function App() {
     saveApiKey,
     resetApiKey,
     handleAnalyze,
+    pendingEntry,
+    confirmItems,
+    setConfirmItems,
+    handleRecalculate,
+    handleConfirm,
+    cancelPending,
     removeEntry,
   } = useCalorieTracker();
 
@@ -226,6 +232,93 @@ export default function App() {
             )}
           </button>
         </Card>
+
+        {pendingEntry && (
+          <Card className="card--flex">
+            <Label>Проверь ингредиенты</Label>
+            {pendingEntry.image && (
+              <img
+                src={pendingEntry.image}
+                alt=""
+                className="confirm__preview"
+              />
+            )}
+            <div className="confirm__description">{pendingEntry.description}</div>
+            <div className="confirm__items">
+              {confirmItems.map((item, i) => (
+                <div key={i} className="confirm__item">
+                  <input
+                    value={item.name}
+                    onChange={(e) =>
+                      setConfirmItems((prev) =>
+                        prev.map((it, j) =>
+                          j === i ? { ...it, name: e.target.value } : it,
+                        ),
+                      )
+                    }
+                    className="confirm__item-name"
+                    placeholder="Название"
+                  />
+                  {item.calories > 0 && (
+                    <span className="confirm__item-cal">{item.calories} ккал</span>
+                  )}
+                  <button
+                    onClick={() =>
+                      setConfirmItems((prev) => prev.filter((_, j) => j !== i))
+                    }
+                    className="confirm__item-del tap"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() =>
+                setConfirmItems((prev) => [...prev, { name: "", calories: 0 }])
+              }
+              className="confirm__add tap"
+            >
+              + Добавить ингредиент
+            </button>
+            <button
+              onClick={handleRecalculate}
+              disabled={loading}
+              className="confirm__recalc tap"
+            >
+              {loading ? (
+                <>
+                  <span className="spinner" />
+                  Считаю...
+                </>
+              ) : (
+                "Пересчитать калории"
+              )}
+            </button>
+            {confirmItems.some((it) => it.calories > 0) && (
+              <div className="confirm__total">
+                Итого:{" "}
+                <strong>
+                  {confirmItems.reduce(
+                    (s, it) => s + (Number(it.calories) || 0),
+                    0,
+                  )}
+                </strong>{" "}
+                ккал
+              </div>
+            )}
+            <button
+              onClick={handleConfirm}
+              disabled={!confirmItems.some((it) => it.calories > 0)}
+              className={`meal-form__submit meal-form__submit--${confirmItems.some((it) => it.calories > 0) ? "active tap" : "disabled"}`}
+            >
+              Добавить в журнал →
+            </button>
+            <button onClick={cancelPending} className="confirm__cancel tap">
+              Отмена
+            </button>
+          </Card>
+        )}
 
         {log.length > 0 && (
           <Card>
