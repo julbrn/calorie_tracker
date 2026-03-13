@@ -31,7 +31,7 @@ export default function App() {
     loading,
     error,
     fileRef,
-    // isAndroid,
+    isAndroid,
     total,
     pct,
     remaining,
@@ -172,7 +172,7 @@ export default function App() {
             ref={fileRef}
             type="file"
             accept="image/*"
-            // {...(isAndroid ? { capture: "environment" } : {})}
+            {...(isAndroid ? { capture: "environment" } : {})}
             style={{ display: "none" }}
             onChange={onFileChange}
           />
@@ -243,7 +243,9 @@ export default function App() {
                 className="confirm__preview"
               />
             )}
-            <div className="confirm__description">{pendingEntry.description}</div>
+            <div className="confirm__description">
+              {pendingEntry.description}
+            </div>
             <div className="confirm__items">
               {confirmItems.map((item, i) => (
                 <div key={i} className="confirm__item">
@@ -260,7 +262,9 @@ export default function App() {
                     placeholder="Название"
                   />
                   {item.calories > 0 && (
-                    <span className="confirm__item-cal">{item.calories} ккал</span>
+                    <span className="confirm__item-cal">
+                      {item.calories} ккал
+                    </span>
                   )}
                   <button
                     onClick={() =>
